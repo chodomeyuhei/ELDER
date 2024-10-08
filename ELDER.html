@@ -1,0 +1,603 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELDER</title>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+  body {
+    padding-top: 20px;
+    background-color: #f8f9fa;
+  }
+  .card {
+    margin-bottom: 20px;
+  }
+  .profile-img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+  .comment-section {
+    margin-top: 20px;
+  }
+  .navbar {
+    margin-bottom: 20px;
+  }
+  .form-error {
+    color: red;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">SNS</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showLoginForm()">ログイン</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showRegisterForm()">登録</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="showProfile()" style="display: none;" id="navProfile">プロフィール</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" onclick="logout()" style="display: none;" id="navLogout">ログアウト</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+  <h1 class="text-center mb-4">ソーシャルネットワーキングサービス</h1>
+
+  <!-- ログインフォーム -->
+  <div id="loginForm" class="card w-50 mx-auto">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">ログイン</h2>
+      <div class="form-group">
+        <input type="text" id="loginUsername" class="form-control" placeholder="ユーザー名">
+        <span id="loginUsernameError" class="form-error" style="display: none;">ユーザー名を入力してください</span>
+      </div>
+      <div class="form-group">
+        <input type="password" id="loginPassword" class="form-control" placeholder="パスワード">
+        <span id="loginPasswordError" class="form-error" style="display: none;">パスワードを入力してください</span>
+      </div>
+      <button onclick="login()" class="btn btn-primary btn-block">ログイン</button>
+      <button onclick="showRegisterForm()" class="btn btn-secondary btn-block">登録</button>
+    </div>
+  </div>
+
+  <!-- 登録フォーム -->
+  <div id="registerForm" class="card w-50 mx-auto" style="display: none;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">登録</h2>
+      <div class="form-group">
+        <input type="text" id="registerName" class="form-control" placeholder="氏名">
+        <span id="registerNameError" class="form-error" style="display: none;">氏名を入力してください</span>
+      </div>
+      <div class="form-group">
+        <input type="text" id="registerUsername" class="form-control" placeholder="ユーザー名">
+        <span id="registerUsernameError" class="form-error" style="display: none;">ユーザー名を入力してください</span>
+      </div>
+      <div class="form-group">
+        <input type="password" id="registerPassword" class="form-control" placeholder="パスワード">
+        <span id="registerPasswordError" class="form-error" style="display: none;">パスワードを入力してください</span>
+      </div>
+      <div class="form-group">
+        <input type="password" id="registerConfirmPassword" class="form-control" placeholder="パスワードを確認">
+        <span id="registerConfirmPasswordError" class="form-error" style="display: none;">パスワードが一致しません</span>
+      </div>
+      <button onclick="register()" class="btn btn-primary btn-block">登録</button>
+      <button onclick="showLoginForm()" class="btn btn-secondary btn-block">ログインに戻る</button>
+    </div>
+  </div>
+
+  <!-- プロフィール -->
+  <div id="profile" class="card w-50 mx-auto" style="display: none;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">プロフィール</h2>
+      <div class="text-center mb-3">
+        <img id="profileImg" class="profile-img" src="default_profile_img.jpg" alt="プロフィール画像">
+      </div>
+      <p class="text-center mb-2"><strong>氏名:</strong> <span id="profileName"></span></p>
+      <p class="text-center mb-4"><strong>ユーザー名:</strong> <span id="profileUsername"></span></p>
+      <div class="form-group">
+        <input type="file" id="profileImageInput" accept="image/*" class="form-control-file">
+      </div>
+      <button onclick="uploadProfileImage()" class="btn btn-primary btn-block"><i class="fas fa-upload"></i> プロフィール画像をアップロード</button>
+      <button id="followButton" onclick="toggleFollow()" class="btn btn-primary btn-block"></button>
+      <button id="messageButton" onclick="openDirectMessageModal()" class="btn btn-primary btn-block">ダイレクトメッセージを送信</button>
+      <button onclick="logout()" class="btn btn-danger btn-block"><i class="fas fa-sign-out-alt"></i> ログアウト</button>
+    </div>
+  </div>
+
+  <!-- 投稿フォーム -->
+  <div id="postForm" class="card w-75 mx-auto" style="display: none;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">投稿を作成</h2>
+      <div class="form-group">
+        <textarea id="postContent" class="form-control" rows="3" placeholder="今何を考えていますか？"></textarea>
+      </div>
+      <button onclick="createPost()" class="btn btn-primary btn-block">投稿</button>
+    </div>
+  </div>
+
+  <!-- FEED登録フォーム -->
+  <div id="feedForm" class="card w-75 mx-auto" style="display: none;">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">FEEDを登録</h2>
+      <div class="form-group">
+        <input type="text" id="feedUrl" class="form-control" placeholder="RSSフィードのURL">
+        <span id="feedUrlError" class="form-error" style="display: none;">RSSフィードのURLを入力してください</span>
+      </div>
+      <button onclick="registerFeed()" class="btn btn-primary btn-block">登録</button>
+    </div>
+  </div>
+
+  <!-- タイムライン -->
+  <div id="timeline" class="w-75 mx-auto mt-4"></div>
+</div>
+
+<!-- リプライモーダル -->
+<div class="modal fade" id="replyModal" tabindex="-1" role="dialog" aria-labelledby="replyModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="replyModalLabel">投稿に返信</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="閉じる">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <textarea id="replyContent" class="form-control" rows="3" placeholder="返信をここに書いてください..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+        <button type="button" onclick="postReply()" class="btn btn-primary">返信</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ダイレクトメッセージモーダル -->
+<div class="modal fade" id="directMessageModal" tabindex="-1" role="dialog" aria-labelledby="directMessageModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="directMessageModalLabel">ダイレクトメッセージを送信</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="閉じる">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <select id="recipient" class="form-control">
+          <option value="">送信先を選択</option>
+          <!-- ユーザーリストがここに追加される -->
+        </select>
+        <textarea id="directMessageContent" class="form-control mt-2" rows="3" placeholder="メッセージをここに書いてください..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">閉じる</button>
+        <button type="button" onclick="sendDirectMessage()" class="btn btn-primary">送信</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+  let currentUser = null; // 現在のログインユーザー
+  let users = []; // ユーザーの配列
+  let posts = []; // 投稿の配列
+  let feeds = []; // フィードの配列
+
+  // ローカルストレージにユーザー情報を保存
+  function saveUsersToLocalStorage() {
+    localStorage.setItem('users', JSON.stringify(users));
+  }
+
+  // ローカルストレージに投稿情報を保存
+  function savePostsToLocalStorage() {
+    localStorage.setItem('posts', JSON.stringify(posts));
+  }
+
+  // ローカルストレージにフィード情報を保存
+  function saveFeedsToLocalStorage() {
+    localStorage.setItem('feeds', JSON.stringify(feeds));
+  }
+
+  // ローカルストレージからユーザー情報を読み込み
+  function loadUsersFromLocalStorage() {
+    const storedUsers = localStorage.getItem('users');
+    if (storedUsers) {
+      users = JSON.parse(storedUsers);
+    }
+  }
+
+  // ローカルストレージから投稿情報を読み込み
+  function loadPostsFromLocalStorage() {
+    const storedPosts = localStorage.getItem('posts');
+    if (storedPosts) {
+      posts = JSON.parse(storedPosts);
+    }
+  }
+
+  // ローカルストレージからフィード情報を読み込み
+  function loadFeedsFromLocalStorage() {
+    const storedFeeds = localStorage.getItem('feeds');
+    if (storedFeeds) {
+      feeds = JSON.parse(storedFeeds);
+    }
+  }
+
+  function showLoginForm() {
+    hideAll();
+    document.getElementById('loginForm').style.display = 'block';
+  }
+
+  function showRegisterForm() {
+    hideAll();
+    document.getElementById('registerForm').style.display = 'block';
+  }
+
+  function validateLoginForm() {
+    let valid = true;
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!username) {
+      document.getElementById('loginUsernameError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('loginUsernameError').style.display = 'none';
+    }
+    
+    if (!password) {
+      document.getElementById('loginPasswordError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('loginPasswordError').style.display = 'none';
+    }
+    
+    return valid;
+  }
+
+  function login() {
+    if (!validateLoginForm()) {
+      return;
+    }
+
+    const username = document.getElementById('loginUsername').value;
+    const password = document.getElementById('loginPassword').value;
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      currentUser = user;
+      showProfile();
+    } else {
+      alert('ユーザー名またはパスワードが間違っています。');
+    }
+  }
+
+  function logout() {
+    currentUser = null;
+    hideAll();
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('navProfile').style.display = 'none';
+    document.getElementById('navLogout').style.display = 'none';
+  }
+
+  function validateRegisterForm() {
+    let valid = true;
+    const name = document.getElementById('registerName').value;
+    const username = document.getElementById('registerUsername').value;
+    const password = document.getElementById('registerPassword').value;
+    const confirmPassword = document.getElementById('registerConfirmPassword').value;
+    
+    if (!name) {
+      document.getElementById('registerNameError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('registerNameError').style.display = 'none';
+    }
+    
+    if (!username) {
+      document.getElementById('registerUsernameError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('registerUsernameError').style.display = 'none';
+    }
+    
+    if (!password) {
+      document.getElementById('registerPasswordError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('registerPasswordError').style.display = 'none';
+    }
+    
+    if (password !== confirmPassword) {
+      document.getElementById('registerConfirmPasswordError').style.display = 'block';
+      valid = false;
+    } else {
+      document.getElementById('registerConfirmPasswordError').style.display = 'none';
+    }
+    
+    return valid;
+  }
+
+  function register() {
+    if (!validateRegisterForm()) {
+      return;
+    }
+
+    const name = document.getElementById('registerName').value;
+    const username = document.getElementById('registerUsername').value;
+    const password = document.getElementById('registerPassword').value;
+
+    users.push({ name, username, password, following: false });
+    saveUsersToLocalStorage(); // ユーザー情報を保存
+    alert('登録が完了しました！ログインしてください。');
+    showLoginForm();
+  }
+
+  function showProfile() {
+    hideAll();
+    document.getElementById('profile').style.display = 'block';
+    document.getElementById('profileName').textContent = currentUser.name;
+    document.getElementById('profileUsername').textContent = currentUser.username;
+    document.getElementById('postForm').style.display = 'block';
+    document.getElementById('feedForm').style.display = 'block';
+    loadProfileImage(); // プロフィール画像をロード
+    displayTimeline(); // タイムラインを表示
+    updateFollowButton(); // フォローボタンの表示を更新
+    loadDirectMessageRecipients(); // ダイレクトメッセージの送信先をロード
+    document.getElementById('navProfile').style.display = 'block';
+    document.getElementById('navLogout').style.display = 'block';
+  }
+
+  // プロフィール画像をロード
+  function loadProfileImage() {
+    const profileImg = document.getElementById('profileImg');
+    // プロフィール画像が設定されている場合はその画像を表示
+    if (currentUser.profileImage) {
+      profileImg.src = currentUser.profileImage;
+    } else {
+      // デフォルトのプロフィール画像を表示
+      profileImg.src = 'default_profile_img.jpg';
+    }
+  }
+
+  // プロフィール画像をアップロード
+  function uploadProfileImage() {
+    const input = document.getElementById('profileImageInput');
+    const file = input.files[0];
+    if (file) {
+      // FileReaderを使用して画像を読み込む
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // 読み込んだ画像をプロフィール画像として設定
+        currentUser.profileImage = e.target.result;
+        // プロフィール画像を更新して表示
+        loadProfileImage();
+        saveUsersToLocalStorage(); // プロフィール画像を保存
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // フォローボタンの更新
+  function updateFollowButton() {
+    const followButton = document.getElementById('followButton');
+    if (currentUser.following) {
+      followButton.textContent = 'フォロー解除';
+    } else {
+      followButton.textContent = 'フォロー';
+    }
+    saveUsersToLocalStorage(); // フォロー状態を保存
+  }
+
+  // フォローの切り替え
+  function toggleFollow() {
+    currentUser.following = !currentUser.following;
+    updateFollowButton();
+  }
+
+  // ダイレクトメッセージの送信先をロード
+  function loadDirectMessageRecipients() {
+    const select = document.getElementById('recipient');
+    select.innerHTML = '<option value="">送信先を選択</option>';
+    users.forEach(user => {
+      if (user !== currentUser) {
+        const option = document.createElement('option');
+        option.value = user.username;
+        option.textContent = user.name;
+        select.appendChild(option);
+      }
+    });
+  }
+
+  // ダイレクトメッセージのモーダルを開く
+  function openDirectMessageModal() {
+    $('#directMessageModal').modal('show');
+  }
+
+  // ダイレクトメッセージを送信
+  function sendDirectMessage() {
+    const recipientUsername = document.getElementById('recipient').value;
+    const messageContent = document.getElementById('directMessageContent').value;
+    if (recipientUsername && messageContent.trim() !== '') {
+      const recipient = users.find(user => user.username === recipientUsername);
+      if (recipient) {
+        alert(`メッセージを${recipient.name}に送信しました: ${messageContent}`);
+        $('#directMessageModal').modal('hide');
+      } else {
+        alert('送信先が見つかりません。');
+      }
+    } else {
+      alert('送信先を選択し、メッセージを入力してください。');
+    }
+  }
+
+  function createPost() {
+    const postContent = document.getElementById('postContent').value;
+    if (postContent.trim() !== '') {
+      const post = {
+        id: Date.now(),
+        content: postContent,
+        author: currentUser.name,
+        authorUsername: currentUser.username,
+        authorProfileImage: currentUser.profileImage, // プロフィール画像を追加
+        likes: 0,
+        comments: []
+      };
+      posts.unshift(post); // 最新の投稿を先頭に追加
+      savePostsToLocalStorage(); // 投稿を保存
+      displayTimeline();
+      document.getElementById('postContent').value = ''; // 投稿後、入力欄を空にする
+    }
+  }
+
+  function registerFeed() {
+    const feedUrl = document.getElementById('feedUrl').value;
+    if (feedUrl.trim() !== '') {
+      feeds.push(feedUrl);
+      saveFeedsToLocalStorage(); // フィード情報を保存
+      alert('RSSフィードが登録されました！');
+      document.getElementById('feedUrl').value = ''; // 登録後、入力欄を空にする
+    } else {
+      document.getElementById('feedUrlError').style.display = 'block';
+    }
+  }
+
+  function displayTimeline() {
+    const timeline = document.getElementById('timeline');
+    timeline.innerHTML = '';
+    posts.forEach(post => {
+      const postElement = document.createElement('div');
+      postElement.classList.add('card', 'mb-3');
+      postElement.innerHTML = `
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <img src="${post.authorProfileImage || 'default_profile_img.jpg'}" class="profile-img mr-2" alt="プロフィール画像">
+            <div>
+              <strong>${post.author}</strong> (@${post.authorUsername})
+            </div>
+          </div>
+          <p class="card-text">${post.content}</p>
+          ${post.link ? `<a href="${post.link}" target="_blank" class="btn btn-link">続きを読む</a>` : ''}
+          <div class="d-flex justify-content-between">
+            <div>
+              <button onclick="likePost(${post.id})" class="btn btn-primary btn-sm"><i class="fas fa-thumbs-up"></i> いいね (${post.likes})</button>
+              <button onclick="toggleComments(${post.id})" class="btn btn-secondary btn-sm"><i class="fas fa-comments"></i> コメント (${post.comments.length})</button>
+              <button onclick="replyToPost(${post.id})" class="btn btn-info btn-sm"><i class="fas fa-reply"></i> 返信</button>
+            </div>
+            <small class="text-muted">${new Date(post.id).toLocaleString()}</small>
+          </div>
+          <div id="comments-${post.id}" class="comment-section mt-3" style="display: none;">
+            ${post.comments.map(comment => `
+              <div class="card mb-2">
+                <div class="card-body">
+                  <p><strong>${comment.author}</strong>: ${comment.content}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      timeline.appendChild(postElement);
+    });
+  }
+
+  function likePost(postId) {
+    const post = posts.find(p => p.id === postId);
+    post.likes++;
+    savePostsToLocalStorage(); // いいねを保存
+    displayTimeline();
+  }
+
+  function toggleComments(postId) {
+    const commentSection = document.getElementById(`comments-${postId}`);
+    commentSection.style.display = commentSection.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function replyToPost(postId) {
+    const modal = document.getElementById('replyModal');
+    modal.dataset.postId = postId;
+    $('#replyModal').modal('show');
+  }
+
+  function postReply() {
+    const postId = parseInt(document.getElementById('replyModal').dataset.postId);
+    const post = posts.find(p => p.id === postId);
+    const replyContent = document.getElementById('replyContent').value;
+    if (replyContent.trim() !== '') {
+      post.comments.push({ author: currentUser.name, content: replyContent });
+      $('#replyModal').modal('hide');
+      savePostsToLocalStorage(); // コメントを保存
+      displayTimeline();
+    } else {
+      alert('返信を入力してください。');
+    }
+  }
+
+  function fetchFeeds() {
+    feeds.forEach(feedUrl => {
+      fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feedUrl)}`)
+        .then(response => response.json())
+        .then(data => {
+          data.items.forEach(item => {
+            const post = {
+              id: Date.now() + Math.random(), // 重複しないIDを生成
+              content: item.title,
+              link: item.link, // リンクを追加
+              author: 'RSSフィード',
+              authorUsername: 'rssfeed',
+              authorProfileImage: 'default_profile_img.jpg', // プロフィール画像を設定
+              likes: 0,
+              comments: []
+            };
+            posts.unshift(post); // 最新の投稿を先頭に追加
+            savePostsToLocalStorage(); // 投稿を保存
+          });
+          displayTimeline(); // タイムラインを表示
+        })
+        .catch(error => console.error('Error fetching RSS feed:', error));
+    });
+  }
+
+  function hideAll() {
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('profile').style.display = 'none';
+    document.getElementById('postForm').style.display = 'none';
+    document.getElementById('feedForm').style.display = 'none';
+  }
+
+  // 初期データをローカルストレージから読み込む
+  loadUsersFromLocalStorage();
+  loadPostsFromLocalStorage();
+  loadFeedsFromLocalStorage();
+
+  // 初期ログイン画面表示
+  hideAll();
+  document.getElementById('loginForm').style.display = 'block';
+
+  // 1時間ごとにRSSフィードをフェッチして自動投稿
+  setInterval(fetchFeeds, 5); // 3600000ミリ秒 = 1時間
+
+</script>
+
+</body>
+</html>
